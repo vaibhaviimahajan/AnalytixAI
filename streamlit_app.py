@@ -86,4 +86,88 @@ fig = px.line(
 
 st.plotly_chart(fig, use_container_width=True)
 
-st.info("📌 Dashboard charts coming in the next step.")
+st.subheader("💳 Revenue by Payment Method")
+
+payment_data = execute_query("""
+SELECT
+    payment_method,
+    ROUND(SUM(oi.total_amount),2) AS revenue
+FROM orders o
+JOIN order_items oi
+ON o.order_id = oi.order_id
+GROUP BY payment_method
+ORDER BY revenue DESC;
+""")
+
+df_payment = pd.DataFrame(
+    payment_data,
+    columns=["Payment Method", "Revenue"]
+)
+
+fig_payment = px.pie(
+    df_payment,
+    names="Payment Method",
+    values="Revenue",
+    hole=0.4,
+    title="Revenue Distribution by Payment Method"
+)
+
+st.plotly_chart(fig_payment, use_container_width=True)
+
+st.subheader("🏆 Top 10 Products")
+
+product_data = execute_query("""
+SELECT
+    p.product_name,
+    ROUND(SUM(oi.total_amount),2) AS revenue
+FROM products p
+JOIN order_items oi
+ON p.product_id = oi.product_id
+GROUP BY p.product_name
+ORDER BY revenue DESC
+LIMIT 10;
+""")
+
+df_products = pd.DataFrame(
+    product_data,
+    columns=["Product", "Revenue"]
+)
+
+fig_products = px.bar(
+    df_products,
+    x="Product",
+    y="Revenue",
+    title="Top Products by Revenue"
+)
+
+st.plotly_chart(fig_products, use_container_width=True)
+
+st.subheader("👑 Top Customers")
+
+customer_data = execute_query("""
+SELECT
+    CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+    ROUND(SUM(oi.total_amount),2) AS total_spent
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+JOIN order_items oi
+ON o.order_id = oi.order_id
+GROUP BY customer_name
+ORDER BY total_spent DESC
+LIMIT 10;
+""")
+
+df_customers = pd.DataFrame(
+    customer_data,
+    columns=["Customer", "Total Spent"]
+)
+
+fig_customers = px.bar(
+    df_customers,
+    x="Customer",
+    y="Total Spent",
+    title="Top Customers"
+)
+
+st.plotly_chart(fig_customers, use_container_width=True)
