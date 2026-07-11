@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from backend.query_executor import execute_query
+from llm.sql_generator import generate_sql
+from llm.response_generator import generate_response
+
 
 st.set_page_config(
     page_title="AnalytixAI",
@@ -287,35 +290,34 @@ st.divider()
 
 st.header("🤖 AI Business Assistant")
 
-user_question = st.text_input(
-    "Ask a business question",
-    placeholder="Example: Show top 5 products by revenue"
+user_question = st.chat_input(
+    "Ask anything about your business..."
 )
 
 if st.button("Generate Insights"):
-    from llm.sql_generator import generate_sql
-    from backend.query_executor import execute_query
-    from llm.response_generator import generate_response
+    with st.spinner("Analyzing your business data..."):
+        try:
+            sql = generate_sql(user_question)
 
-try:
-    sql = generate_sql(user_question)
+            with st.expander("📝 Generated SQL"):
+                st.code(sql, language="sql")
 
-    st.subheader("Generated SQL")
-    st.code(sql, language="sql")
+            rows = execute_query(sql)
 
-    rows = execute_query(sql)
+            st.subheader("Query Results")
 
-    st.subheader("Query Results")
-    st.dataframe(rows)
+            df = pd.DataFrame(rows)
 
-    summary = generate_response(
-        user_question,
-        sql,
-        rows
-    )
+            st.dataframe(df, use_container_width=True)
 
-    st.subheader("AI Summary")
-    st.success(summary)
+            summary = generate_response(
+                user_question,
+                sql,
+                rows
+            )
 
-except Exception as e:
-    st.error(str(e))
+            st.subheader("AI Summary")
+            st.success(summary)
+
+        except Exception as e:
+            st.error(str(e))
