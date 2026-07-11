@@ -126,38 +126,6 @@ else:
         GROUP BY month
         ORDER BY month;
     """, (selected_category,))
-    st.subheader("📈 Monthly Revenue Trend")
-
-if selected_category == "All":
-
-    monthly_sales = execute_query("""
-        SELECT
-            DATE_TRUNC('month', o.order_date) AS month,
-            ROUND(SUM(oi.total_amount), 2) AS revenue
-        FROM orders o
-        JOIN order_items oi
-            ON o.order_id = oi.order_id
-        GROUP BY month
-        ORDER BY month;
-    """)
-
-else:
-
-    monthly_sales = execute_query("""
-        SELECT
-            DATE_TRUNC('month', o.order_date) AS month,
-            ROUND(SUM(oi.total_amount), 2) AS revenue
-        FROM orders o
-        JOIN order_items oi
-            ON o.order_id = oi.order_id
-        JOIN products p
-            ON oi.product_id = p.product_id
-        JOIN categories c
-            ON p.category_id = c.category_id
-        WHERE c.category_name = %s
-        GROUP BY month
-        ORDER BY month;
-    """, (selected_category,))
 
 df_monthly = pd.DataFrame(
     monthly_sales,
@@ -320,8 +288,6 @@ if user_question:
             with st.expander("📝 Generated SQL"):
                 st.code(sql, language="sql")
 
-            rows = execute_query(sql)
-
             rows, columns = execute_query(
                 sql,
                 return_columns=True
@@ -332,9 +298,6 @@ if user_question:
                 columns=columns
             )
             st.dataframe(df, use_container_width=True)
-            print(df)
-            print(df.dtypes)
-            print(df.columns)
             if len(df.columns) == 2:
 
                 first_col = df.columns[0]
