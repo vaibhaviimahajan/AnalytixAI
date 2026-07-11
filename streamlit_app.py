@@ -282,3 +282,40 @@ fig_customers = px.bar(
 )
 
 st.plotly_chart(fig_customers, use_container_width=True)
+
+st.divider()
+
+st.header("🤖 AI Business Assistant")
+
+user_question = st.text_input(
+    "Ask a business question",
+    placeholder="Example: Show top 5 products by revenue"
+)
+
+if st.button("Generate Insights"):
+    from llm.sql_generator import generate_sql
+    from backend.query_executor import execute_query
+    from llm.response_generator import generate_response
+
+try:
+    sql = generate_sql(user_question)
+
+    st.subheader("Generated SQL")
+    st.code(sql, language="sql")
+
+    rows = execute_query(sql)
+
+    st.subheader("Query Results")
+    st.dataframe(rows)
+
+    summary = generate_response(
+        user_question,
+        sql,
+        rows
+    )
+
+    st.subheader("AI Summary")
+    st.success(summary)
+
+except Exception as e:
+    st.error(str(e))
