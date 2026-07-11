@@ -332,6 +332,8 @@ if user_question:
                 columns=columns
             )
             st.dataframe(df, use_container_width=True)
+            st.write(df.dtypes)
+            st.write(df.columns)
             if len(df.columns) == 2:
 
                 first_col = df.columns[0]
