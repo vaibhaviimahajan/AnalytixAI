@@ -1,9 +1,9 @@
 from backend.database import get_connection
 
 
-def execute_query(query, params=None):
+def execute_query(query, params=None, return_columns=False):
     """
-    Executes a SQL query and returns all rows.
+    Executes SQL and optionally returns column names.
     """
 
     conn = get_connection()
@@ -13,7 +13,12 @@ def execute_query(query, params=None):
 
     rows = cursor.fetchall()
 
+    columns = [desc[0] for desc in cursor.description]
+
     cursor.close()
     conn.close()
 
-    return rows
+    if return_columns:
+        return rows, columns
+
+    return rows 

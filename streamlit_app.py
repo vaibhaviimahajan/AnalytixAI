@@ -4,13 +4,16 @@ import plotly.express as px
 from backend.query_executor import execute_query
 from llm.sql_generator import generate_sql
 from llm.response_generator import generate_response
-
+from backend.sql_validator import validate_sql
 
 st.set_page_config(
     page_title="AnalytixAI",
     page_icon="📊",
     layout="wide"
 )
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 st.sidebar.title("📊 Dashboard Filters")
 categories = execute_query("""
@@ -290,31 +293,71 @@ st.divider()
 
 st.header("🤖 AI Business Assistant")
 
+# Show previous conversation
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+        
 user_question = st.chat_input(
     "Ask anything about your business..."
 )
 
-if st.button("Generate Insights"):
+if user_question:
+
+    # Save user's question
+    st.session_state.messages.append({
+        "role": "user",
+        "content": user_question
+    })
+
     with st.spinner("Analyzing your business data..."):
+
         try:
             sql = generate_sql(user_question)
+
+            validate_sql(sql)
 
             with st.expander("📝 Generated SQL"):
                 st.code(sql, language="sql")
 
             rows = execute_query(sql)
 
-            st.subheader("Query Results")
+            rows, columns = execute_query(
+                sql,
+                return_columns=True
+            )
 
-            df = pd.DataFrame(rows)
-
+            df = pd.DataFrame(
+                rows,
+                columns=columns
+            )
             st.dataframe(df, use_container_width=True)
+            if len(df.columns) == 2:
 
+                first_col = df.columns[0]
+                second_col = df.columns[1]
+
+                if pd.api.types.is_numeric_dtype(df[second_col]):
+
+                    fig = px.bar(
+                        df,
+                        x=first_col,
+                        y=second_col,
+                        title="AI Generated Visualization"
+                    )
+
+                    st.plotly_chart(fig, use_container_width=True)
             summary = generate_response(
                 user_question,
                 sql,
                 rows
             )
+
+            # Save AI response
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": summary
+            })
 
             st.subheader("AI Summary")
             st.success(summary)
