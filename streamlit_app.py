@@ -332,14 +332,16 @@ if user_question:
                 columns=columns
             )
             st.dataframe(df, use_container_width=True)
-            st.write(df.dtypes)
-            st.write(df.columns)
+            print(df)
+            print(df.dtypes)
+            print(df.columns)
             if len(df.columns) == 2:
 
                 first_col = df.columns[0]
                 second_col = df.columns[1]
 
-                if pd.api.types.is_numeric_dtype(df[second_col]):
+                try:
+                    df[second_col] = pd.to_numeric(df[second_col])
 
                     fig = px.bar(
                         df,
@@ -349,13 +351,16 @@ if user_question:
                     )
 
                     st.plotly_chart(fig, use_container_width=True)
+
+                except Exception:
+                    pass
+
+            # Save AI response
             summary = generate_response(
                 user_question,
                 sql,
                 rows
             )
-
-            # Save AI response
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": summary
@@ -366,3 +371,4 @@ if user_question:
 
         except Exception as e:
             st.error(str(e))
+
