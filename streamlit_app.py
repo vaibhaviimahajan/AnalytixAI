@@ -298,25 +298,24 @@ if user_question:
                 columns=columns
             )
             st.dataframe(df, use_container_width=True)
-            if len(df.columns) == 2:
+            if len(df.columns) >= 2:
+                   numeric_col = df.columns[-1]
+            label_col = df.columns[-2]
 
-                first_col = df.columns[0]
-                second_col = df.columns[1]
+            try:
+                df[numeric_col] = pd.to_numeric(df[numeric_col])
 
-                try:
-                    df[second_col] = pd.to_numeric(df[second_col])
+                fig = px.bar(
+                    df,
+                    x=label_col,
+                    y=numeric_col,
+                    title="AI Generated Visualization"
+                )
 
-                    fig = px.bar(
-                        df,
-                        x=first_col,
-                        y=second_col,
-                        title="AI Generated Visualization"
-                    )
+                st.plotly_chart(fig, use_container_width=True)
 
-                    st.plotly_chart(fig, use_container_width=True)
-
-                except Exception:
-                    pass
+            except Exception:
+                pass
 
             # Save AI response
             summary = generate_response(
@@ -324,13 +323,10 @@ if user_question:
                 sql,
                 rows
             )
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": summary
-            })
+            
 
             st.subheader("AI Summary")
-            st.success(summary)
+            st.write(summary)
 
         except Exception as e:
             st.error(str(e))

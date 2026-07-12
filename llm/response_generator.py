@@ -5,23 +5,28 @@ llm = get_llm()
 
 def generate_response(question, sql, results):
 
-    prompt = f"""
-You are a business analyst.
+    results_text = "\n".join(str(row) for row in results)
 
-User Question:
+    prompt = f"""
+You are an experienced business analyst.
+
+Question:
 {question}
 
-Generated SQL:
-{sql}
+Results:
+{results_text}
 
-Query Results:
-{results}
-
-Write a short, professional business summary.
-Do not mention SQL.
-Keep it under 120 words.
+Write a plain English summary.
+Do not use Markdown.
+Do not use bold.
+Do not use bullets.
+Keep it under 100 words.
 """
 
     response = llm.invoke(prompt)
+
+    print("\n========== MISTRAL RESPONSE ==========\n")
+    print(response.content)
+    print("\n======================================\n")
 
     return response.content
