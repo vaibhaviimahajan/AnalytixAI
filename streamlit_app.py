@@ -265,7 +265,16 @@ st.header("🤖 AI Business Assistant")
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        
+
+st.markdown("""
+### 💡 Try asking:
+- Which products generated the highest revenue?
+- Show monthly sales trends.
+- Who are the top 10 customers?
+- Which payment method generates the most revenue?
+- Compare revenue across categories.
+""")
+
 user_question = st.chat_input(
     "Ask anything about your business..."
 )
@@ -298,24 +307,63 @@ if user_question:
                 columns=columns
             )
             st.dataframe(df, use_container_width=True)
+            csv = df.to_csv(index=False).encode("utf-8")
+
+            st.download_button(
+                "📥 Download Results",
+                csv,
+                "query_results.csv",
+                "text/csv"
+            )
             if len(df.columns) >= 2:
-                   numeric_col = df.columns[-1]
-            label_col = df.columns[-2]
 
-            try:
-                df[numeric_col] = pd.to_numeric(df[numeric_col])
+                numeric_col = df.columns[-1]
+                label_col = df.columns[-2]
 
-                fig = px.bar(
-                    df,
-                    x=label_col,
-                    y=numeric_col,
-                    title="AI Generated Visualization"
-                )
+                try:
 
-                st.plotly_chart(fig, use_container_width=True)
+                    df[numeric_col] = pd.to_numeric(df[numeric_col])
 
-            except Exception:
-                pass
+                    # Convert dates if possible
+                    try:
+                        df[label_col] = pd.to_datetime(df[label_col])
+                    except:
+                        pass
+
+                    # Decide chart type
+                    if pd.api.types.is_datetime64_any_dtype(df[label_col]):
+
+                        fig = px.line(
+                            df,
+                            x=label_col,
+                            y=numeric_col,
+                            markers=True,
+                            title="AI Generated Visualization"
+                        )
+
+                    elif "payment" in label_col.lower():
+
+                        fig = px.pie(
+                            df,
+                            names=label_col,
+                            values=numeric_col,
+                            hole=0.4,
+                            title="AI Generated Visualization"
+                        )
+
+                    else:
+
+                        fig = px.bar(
+                            df,
+                            x=label_col,
+                            y=numeric_col,
+                            title="AI Generated Visualization"
+                        )
+
+                    st.plotly_chart(fig, use_container_width=True)
+
+                except Exception:
+                    pass
 
             # Save AI response
             summary = generate_response(
