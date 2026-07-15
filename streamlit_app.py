@@ -12,6 +12,18 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown("""
+<style>
+div[data-testid="stMetric"] {
+    border: 1px solid #D3D3D3;
+    border-radius: 12px;
+    padding: 15px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+</style>
+""", unsafe_allow_html=True)
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
