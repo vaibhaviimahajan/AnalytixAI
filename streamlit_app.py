@@ -268,11 +268,11 @@ for message in st.session_state.messages:
 
 st.markdown("""
 ### 💡 Try asking:
-- Which products generated the highest revenue?
+- What percentage of revenue comes from each product category?
 - Show monthly sales trends.
 - Who are the top 10 customers?
-- Which payment method generates the most revenue?
-- Compare revenue across categories.
+- What is the distribution of orders by payment method?
+- Display weekly order count.
 """)
 
 user_question = st.chat_input(
