@@ -8,7 +8,7 @@ AnalytixAI is an AI-powered Business Intelligence platform that enables users to
 
 Watch the complete application walkthrough:
 
-[https://youtu.be/tuix31EjsIA](https://youtu.be/de9VpMaVzEE)
+https://youtu.be/de9VpMaVzEE
 
 ---
 
