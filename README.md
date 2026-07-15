@@ -124,7 +124,7 @@ AnalytixAI/
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
-├── app.py
+├── streamlit_app.py
 └── structure.txt
 ```
 
